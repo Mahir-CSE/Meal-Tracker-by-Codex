@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Office Meal Tracker</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="topbar" aria-label="Meal tracker controls">
+        <div>
+          <p class="eyebrow">Tekarsh Bangladesh Ltd</p>
+          <h1>Meal Tracker</h1>
+        </div>
+        <div class="topbar-actions">
+          <label class="field compact">
+            <span>Date</span>
+            <input id="selectedDate" type="date" />
+          </label>
+          <button class="icon-button" id="exportCsv" type="button" title="Export CSV" aria-label="Export CSV">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="date-banner" aria-label="Selected date">
+        <span>Selected Date</span>
+        <strong id="dateDisplay">Today</strong>
+      </section>
+
+      <section class="summary-grid" aria-label="Meal order summary">
+        <article class="metric lunch">
+          <span>Lunch Orders</span>
+          <strong id="lunchCount">0</strong>
+        </article>
+        <article class="metric dinner">
+          <span>Dinner Orders</span>
+          <strong id="dinnerCount">0</strong>
+        </article>
+        <article class="metric wfh">
+          <span>WFH Staff</span>
+          <strong id="wfhCount">0</strong>
+        </article>
+        <article class="metric leave">
+          <span>Leave Staff</span>
+          <strong id="leaveCount">0</strong>
+        </article>
+        <article class="metric working-days">
+          <span>Working Days</span>
+          <strong id="workingDaysCount">0</strong>
+        </article>
+      </section>
+
+      <section class="control-panel" aria-label="Employee controls">
+        <div class="panel-header">
+          <span>Employee</span>
+          <span id="staffTotal">0 people</span>
+        </div>
+        <form class="add-staff" id="addStaffForm">
+          <input id="newStaffName" type="text" placeholder="Add new employee" autocomplete="off" />
+          <button type="submit">Add</button>
+        </form>
+        <label class="field">
+          <span>Search</span>
+          <input id="searchStaff" type="search" placeholder="Find employee" />
+        </label>
+        <label class="field view-option">
+          <span>View Option</span>
+          <select id="viewOption" aria-label="View employees by job role">
+            <option value="All">All Employees</option>
+          </select>
+        </label>
+        <label class="office-toggle" aria-label="Office open toggle">
+          <span>Office</span>
+          <input id="officeOpenToggle" type="checkbox" checked />
+          <strong id="officeToggleText">On</strong>
+        </label>
+      </section>
+
+      <section class="workspace">
+        <section class="tracker-panel">
+          <div class="weekend-screen" id="weekendScreen" hidden>
+            <div class="weekend-mark" aria-hidden="true">
+              <span></span>
+            </div>
+            <p>Weekend</p>
+            <h2>Today is the weekend.</h2>
+            <span>No daily attendance or meal orders are needed for Saturday or Sunday.</span>
+          </div>
+
+          <div class="closed-screen" id="closedScreen" hidden>
+            <div class="closed-mark" aria-hidden="true">
+              <span></span>
+            </div>
+            <p>Office Closed</p>
+            <h2>The office is closed today.</h2>
+            <span>No lunch or dinner orders are needed for this date.</span>
+          </div>
+
+          <div class="attendance-view" id="attendanceView">
+            <div class="panel-header tracker-heading">
+            <div>
+              <h2>Daily Attendance & Meals</h2>
+              <p>Please recheck the meal status before 10:00 am daily.</p>
+            </div>
+            <div class="legend" aria-label="Meal legend">
+              <span><i class="yes-dot"></i> Yes</span>
+              <span><i class="no-dot"></i> No</span>
+            </div>
+            </div>
+            <div class="status-filters" aria-label="Employee status filters">
+              <button type="button" class="active" data-status-filter="All">All <span>0</span></button>
+              <button type="button" data-status-filter="Work from Office">Office <span>0</span></button>
+              <button type="button" data-status-filter="Work from Home">WFH <span>0</span></button>
+              <button type="button" data-status-filter="Leave">Leave <span>0</span></button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th>Job Role</th>
+                    <th>
+                      <span class="status-heading">
+                        Work Status
+                        <button class="info-button" type="button" aria-label="Show work status meal rules">i</button>
+                        <span class="rule-tooltip" role="tooltip">
+                          <strong>Meal rules</strong>
+                          <span>Work from Office: Lunch defaults Yes, Dinner defaults Yes.</span>
+                          <span>QA defaults to WFH every Friday.</span>
+                          <span>Dev defaults to WFH every Thursday.</span>
+                          <span>Change Work Status to Office to edit Lunch and Dinner.</span>
+                          <span>QA: Dinner defaults No, but can be changed to Yes.</span>
+                          <span>Work from Home or Leave: Lunch and Dinner stay No.</span>
+                        </span>
+                      </span>
+                    </th>
+                    <th>Lunch</th>
+                    <th>Dinner</th>
+                    <th>Notes</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="trackerRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app-data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

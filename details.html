@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Meal Details</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell details-shell">
+      <section class="topbar" aria-label="Employee details controls">
+        <div>
+          <p class="eyebrow" id="employeeRole">Employee Details</p>
+          <h1 id="employeeName">Meal Details</h1>
+        </div>
+        <div class="topbar-actions">
+          <a class="back-button" href="./index.html">Home</a>
+        </div>
+      </section>
+
+      <section class="date-banner" aria-label="Current period">
+        <span>Selected Period</span>
+        <strong id="detailsDateDisplay">Period</strong>
+      </section>
+
+      <section class="details-control-panel" aria-label="Details date range controls">
+        <div class="view-toggle" aria-label="View period">
+          <button type="button" class="active" data-view="week">Week</button>
+          <button type="button" data-view="month">Month</button>
+          <button type="button" data-view="year">Year</button>
+        </div>
+        <div class="period-nav">
+          <button type="button" id="prevPeriod">Prev</button>
+          <span id="periodLabel">Period</span>
+          <button type="button" id="nextPeriod">Next</button>
+        </div>
+      </section>
+
+      <section class="employee-month-summary details-summary" id="employeeMonthSummary"></section>
+
+      <section class="tracker-panel">
+        <div class="panel-header tracker-heading">
+          <div>
+            <h2>Meal Status</h2>
+            <p id="monthContext">Every day in the selected period.</p>
+          </div>
+        </div>
+
+        <div class="employee-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Work Status</th>
+                <th>Lunch</th>
+                <th>Dinner</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody id="employeeMonthRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app-data.js"></script>
+    <script src="./details.js"></script>
+  </body>
+</html>
