@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Employee Meal Details</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=4" />
   </head>
   <body>
     <main class="app-shell details-shell">
@@ -14,7 +14,15 @@
           <h1 id="employeeName">Meal Details</h1>
         </div>
         <div class="topbar-actions">
-          <a class="back-button" href="./index.html">Home</a>
+          <label class="field export-field">
+            <span>Export</span>
+            <select id="detailsExportOption" aria-label="Export employee details">
+              <option value="">Export as</option>
+              <option value="pdf">Export as PDF</option>
+              <option value="csv">Export as CSV</option>
+            </select>
+          </label>
+          <a class="back-button" id="homeButton" href="./index.html">Home</a>
         </div>
       </section>
 
@@ -65,6 +73,6 @@
     </main>
 
     <script src="./app-data.js"></script>
-    <script src="./details.js"></script>
+    <script src="./details.js?v=4"></script>
   </body>
 </html>

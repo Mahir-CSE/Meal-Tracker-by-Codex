@@ -14,6 +14,8 @@ const periodLabel = document.querySelector("#periodLabel");
 const viewButtons = document.querySelectorAll("[data-view]");
 const prevPeriod = document.querySelector("#prevPeriod");
 const nextPeriod = document.querySelector("#nextPeriod");
+const homeButton = document.querySelector("#homeButton");
+const detailsExportOption = document.querySelector("#detailsExportOption");
 
 const state = loadState();
 let currentView = "week";
@@ -34,6 +36,17 @@ prevPeriod.addEventListener("click", () => {
 nextPeriod.addEventListener("click", () => {
   movePeriod(1);
   render();
+});
+
+homeButton.addEventListener("click", (event) => {
+  event.preventDefault();
+  window.location.assign(new URL("index.html", window.location.href).href);
+});
+
+detailsExportOption.addEventListener("change", () => {
+  if (detailsExportOption.value === "csv") exportDetailsCsv();
+  if (detailsExportOption.value === "pdf") exportDetailsPdf();
+  detailsExportOption.value = "";
 });
 
 render();
@@ -278,11 +291,18 @@ function render() {
     row.innerHTML = `
       <td>${dateKey}</td>
       <td>${dayLabel(dateKey)}</td>
-      <td>${status}</td>
+      <td>${weekend || officeClosed ? status : statusSelectHtml(status, dateKey)}</td>
       <td><span class="meal-pill ${mealClass(lunch)}">${lunch}</span></td>
       <td><span class="meal-pill ${mealClass(dinner)}">${dinner}</span></td>
       <td>${escapeHtml(entry.notes ?? "")}</td>
     `;
+
+    if (!weekend && !officeClosed) {
+      row.querySelector(".details-status-select").addEventListener("change", (event) => {
+        updateWorkStatus(dateKey, event.target.value);
+      });
+    }
+
     employeeMonthRows.append(row);
   }
 
@@ -296,6 +316,82 @@ function render() {
   `;
 
   saveState();
+}
+
+function statusSelectHtml(status, dateKey) {
+  return `
+    <select class="details-status-select" aria-label="Work status for ${employeeName} on ${dateKey}">
+      ${workStatuses.map((workStatus) => `<option${workStatus === status ? " selected" : ""}>${escapeHtml(workStatus)}</option>`).join("")}
+    </select>
+  `;
+}
+
+function updateWorkStatus(dateKey, status) {
+  const day = dayFor(dateKey);
+  day[employeeName] = {
+    ...day[employeeName],
+    status,
+    statusOverride: status,
+    manualStatus: true,
+  };
+  saveState();
+  render();
+}
+
+function exportDetailsCsv() {
+  const role = state.roles[employeeName] ?? defaultRoles[employeeName] ?? "Other";
+  const rows = [["Employee", "Job Role", "Date", "Day", "Work Status", "Lunch", "Dinner", "Notes"]];
+
+  for (const dateKey of currentPeriodDates()) {
+    const weekend = isWeekend(dateKey);
+    const officeClosed = isOfficeClosed(dateKey);
+    const entry = dayFor(dateKey)[employeeName];
+    const status = officeClosed ? "Office Closed" : weekend ? "Weekend" : entry.status;
+    const lunch = weekend || officeClosed ? "No" : effectiveMeal(entry, role, "lunch");
+    const dinner = weekend || officeClosed ? "No" : effectiveMeal(entry, role, "dinner");
+
+    rows.push([
+      employeeName,
+      role,
+      dateKey,
+      dayLabel(dateKey),
+      status,
+      lunch,
+      dinner,
+      entry.notes ?? "",
+    ]);
+  }
+
+  const csv = rows.map((row) => row.map(csvCell).join(",")).join("\n");
+  const title = periodTitle(currentPeriodDates()).replaceAll(" ", "-").replaceAll(",", "");
+  downloadCsv(csv, `meal-details-${slugify(employeeName)}-${currentView}-${title}.csv`);
+}
+
+function exportDetailsPdf() {
+  document.title = `Meal Details ${employeeName} ${periodTitle(currentPeriodDates())}`;
+  window.print();
+}
+
+function downloadCsv(csv, filename) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function csvCell(value) {
+  const text = String(value).replaceAll('"', '""');
+  return `"${text}"`;
+}
+
+function slugify(value) {
+  return String(value)
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9]+/g, "-")
+    .replaceAll(/(^-|-$)/g, "");
 }
 
 function mealClass(meal) {

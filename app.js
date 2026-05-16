@@ -23,12 +23,21 @@ const statusFilterButtons = document.querySelectorAll("[data-status-filter]");
 const viewOption = document.querySelector("#viewOption");
 const officeOpenToggle = document.querySelector("#officeOpenToggle");
 const officeToggleText = document.querySelector("#officeToggleText");
+const prevDay = document.querySelector("#prevDay");
+const nextDay = document.querySelector("#nextDay");
+const exportOption = document.querySelector("#exportOption");
 let currentStatusFilter = "All";
 let currentRoleFilter = "All";
 
 selectedDate.value = todayKey();
 
 selectedDate.addEventListener("change", render);
+prevDay.addEventListener("click", () => {
+  shiftSelectedDate(-1);
+});
+nextDay.addEventListener("click", () => {
+  shiftSelectedDate(1);
+});
 officeOpenToggle.addEventListener("change", () => {
   const date = selectedDate.value || todayKey();
   state.closedDates ??= {};
@@ -51,7 +60,11 @@ viewOption.addEventListener("change", () => {
   currentRoleFilter = viewOption.value;
   render();
 });
-document.querySelector("#exportCsv").addEventListener("click", exportCsv);
+exportOption.addEventListener("change", () => {
+  if (exportOption.value === "csv") exportCsv();
+  if (exportOption.value === "pdf") exportPdf();
+  exportOption.value = "";
+});
 
 addStaffForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -106,6 +119,20 @@ function todayKey() {
   const now = new Date();
   const offset = now.getTimezoneOffset() * 60000;
   return new Date(now.getTime() - offset).toISOString().slice(0, 10);
+}
+
+function shiftSelectedDate(days) {
+  const date = new Date(`${selectedDate.value || todayKey()}T00:00:00`);
+  date.setDate(date.getDate() + days);
+  selectedDate.value = dateKeyFromDate(date);
+  render();
+}
+
+function dateKeyFromDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function dayFor(date) {
@@ -299,9 +326,10 @@ function createRow(name, entry) {
   const officeDay = entry.status === "Work from Office";
   const lunch = effectiveMeal(entry, role, "lunch");
   const dinner = effectiveMeal(entry, role, "dinner");
+  const detailsUrl = `details.html?employee=${encodeURIComponent(name)}&date=${selectedDate.value || todayKey()}`;
 
   row.innerHTML = `
-    <td><a class="employee-link" href="details.html?employee=${encodeURIComponent(name)}&date=${selectedDate.value || todayKey()}">${escapeHtml(name)}</a></td>
+    <td><a class="employee-link" href="${detailsUrl}">${escapeHtml(name)}</a></td>
     <td>
       <select class="role-select" aria-label="Job role for ${escapeHtml(name)}">
         ${jobRoles.map((jobRole) => `<option>${escapeHtml(jobRole)}</option>`).join("")}
@@ -334,6 +362,12 @@ function createRow(name, entry) {
   const dinnerSelect = row.querySelector('[aria-label^="Dinner"]');
   const notes = row.querySelector("textarea");
   const deleteButton = row.querySelector(".delete-employee");
+
+  row.classList.add("employee-row");
+  row.addEventListener("click", (event) => {
+    if (event.target.closest("a, button, input, select, textarea")) return;
+    window.location.href = detailsUrl;
+  });
 
   roleSelect.value = role;
   statusSelect.value = entry.status;
@@ -425,6 +459,11 @@ function exportCsv() {
   link.download = `meal-tracker-${date}.csv`;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function exportPdf() {
+  document.title = `Meal Tracker ${selectedDate.value || todayKey()}`;
+  window.print();
 }
 
 function csvCell(value) {

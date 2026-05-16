@@ -134,6 +134,10 @@ textarea:focus {
   width: 170px;
 }
 
+.export-field {
+  width: 160px;
+}
+
 .icon-button {
   display: grid;
   width: 42px;
@@ -153,6 +157,24 @@ textarea:focus {
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 2;
+}
+
+.day-nav-button {
+  min-height: 42px;
+  align-self: end;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 900;
+  padding: 0 13px;
+  white-space: nowrap;
+}
+
+.day-nav-button:hover,
+.day-nav-button:focus {
+  border-color: var(--blue);
+  color: var(--blue);
 }
 
 .summary-grid {
@@ -630,6 +652,14 @@ td:first-child {
   font-weight: 800;
 }
 
+.employee-row {
+  cursor: pointer;
+}
+
+.employee-row:has(select:hover, textarea:hover, button:hover) {
+  cursor: default;
+}
+
 .employee-link {
   border: 0;
   background: transparent;
@@ -745,6 +775,12 @@ td:nth-child(7) {
 
 .employee-table-wrap table {
   min-width: 760px;
+}
+
+.details-status-select {
+  min-height: 36px;
+  min-width: 170px;
+  font-weight: 800;
 }
 
 .weekend-row {
@@ -903,10 +939,50 @@ td:nth-child(7) {
 
   .topbar-actions {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr 1fr;
   }
 
   .details-shell .topbar-actions {
     grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .app-shell {
+    width: 100%;
+    padding: 0;
+  }
+
+  .topbar-actions,
+  .control-panel,
+  .status-filters,
+  .legend,
+  .delete-employee,
+  .info-button,
+  .rule-tooltip {
+    display: none !important;
+  }
+
+  .metric,
+  .tracker-panel,
+  .employee-month-summary,
+  .date-banner {
+    box-shadow: none;
+  }
+
+  select,
+  textarea,
+  input {
+    border: 0;
+    padding: 0;
+    background: transparent;
+  }
+
+  textarea {
+    resize: none;
   }
 }

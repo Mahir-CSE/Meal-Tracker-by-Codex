@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Office Meal Tracker</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=4" />
   </head>
   <body>
     <main class="app-shell">
@@ -14,15 +14,20 @@
           <h1>Meal Tracker</h1>
         </div>
         <div class="topbar-actions">
+          <button class="day-nav-button" id="prevDay" type="button">Prev Day</button>
           <label class="field compact">
             <span>Date</span>
             <input id="selectedDate" type="date" />
           </label>
-          <button class="icon-button" id="exportCsv" type="button" title="Export CSV" aria-label="Export CSV">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
-            </svg>
-          </button>
+          <button class="day-nav-button" id="nextDay" type="button">Next Day</button>
+          <label class="field export-field">
+            <span>Export</span>
+            <select id="exportOption" aria-label="Export meal tracker">
+              <option value="">Export as</option>
+              <option value="pdf">Export as PDF</option>
+              <option value="csv">Export as CSV</option>
+            </select>
+          </label>
         </div>
       </section>
 
@@ -154,6 +159,6 @@
     </main>
 
     <script src="./app-data.js"></script>
-    <script src="./app.js"></script>
+    <script src="./app.js?v=4"></script>
   </body>
 </html>
