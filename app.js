@@ -1,4 +1,11 @@
-const { storageKey: STORAGE_KEY, employees: defaultEmployees, jobRoles, workStatuses } = window.MealTrackerData;
+const {
+  storageKey: STORAGE_KEY,
+  employees: defaultEmployees,
+  jobRoles,
+  workStatuses,
+  normalizeState,
+} = window.MealTrackerData;
+const employeeUI = window.MealTrackerEmployeeUI;
 const defaultStaff = defaultEmployees.map((employee) => employee.name);
 const defaultRoles = Object.fromEntries(defaultEmployees.map((employee) => [employee.name, employee.role]));
 
@@ -13,8 +20,7 @@ const leaveCount = document.querySelector("#leaveCount");
 const workingDaysCount = document.querySelector("#workingDaysCount");
 const staffTotal = document.querySelector("#staffTotal");
 const dateDisplay = document.querySelector("#dateDisplay");
-const addStaffForm = document.querySelector("#addStaffForm");
-const newStaffName = document.querySelector("#newStaffName");
+const openAddEmployee = document.querySelector("#openAddEmployee");
 const searchStaff = document.querySelector("#searchStaff");
 const weekendScreen = document.querySelector("#weekendScreen");
 const closedScreen = document.querySelector("#closedScreen");
@@ -28,6 +34,15 @@ const nextDay = document.querySelector("#nextDay");
 const exportOption = document.querySelector("#exportOption");
 let currentStatusFilter = "All";
 let currentRoleFilter = "All";
+
+employeeUI.init({
+  getState: () => state,
+  saveState,
+  onUpdated: render,
+  defaultRoles,
+  jobRoles,
+  openAddButton: openAddEmployee,
+});
 
 selectedDate.value = todayKey();
 
@@ -66,19 +81,6 @@ exportOption.addEventListener("change", () => {
   exportOption.value = "";
 });
 
-addStaffForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const name = newStaffName.value.trim();
-  if (!name) return;
-  if (!state.staff.includes(name)) {
-    state.staff.push(name);
-    state.roles[name] = "Other";
-  }
-  newStaffName.value = "";
-  saveState();
-  render();
-});
-
 render();
 
 function loadState() {
@@ -99,16 +101,7 @@ function loadState() {
     days: {},
   };
 
-  nextState.staff ??= [...defaultStaff];
-  nextState.roles ??= {};
-  nextState.days ??= {};
-  nextState.closedDates ??= {};
-
-  for (const name of nextState.staff) {
-    nextState.roles[name] ??= defaultRoles[name] ?? "Other";
-  }
-
-  return nextState;
+  return normalizeState(nextState);
 }
 
 function saveState() {
@@ -353,7 +346,7 @@ function createRow(name, entry) {
       </select>
     </td>
     <td><textarea aria-label="Notes for ${escapeHtml(name)}" placeholder="Optional"></textarea></td>
-    <td><button class="delete-employee" type="button" aria-label="Delete ${escapeHtml(name)}">Delete</button></td>
+    <td>${employeeUI.actionButtonsHtml(name)}</td>
   `;
 
   const roleSelect = row.querySelector(".role-select");
@@ -361,8 +354,6 @@ function createRow(name, entry) {
   const lunchSelect = row.querySelector('[aria-label^="Lunch"]');
   const dinnerSelect = row.querySelector('[aria-label^="Dinner"]');
   const notes = row.querySelector("textarea");
-  const deleteButton = row.querySelector(".delete-employee");
-
   row.classList.add("employee-row");
   row.addEventListener("click", (event) => {
     if (event.target.closest("a, button, input, select, textarea")) return;
@@ -409,9 +400,7 @@ function createRow(name, entry) {
     saveState();
   });
 
-  deleteButton.addEventListener("click", () => {
-    deleteEmployee(name);
-  });
+  employeeUI.bindRowActions(row, name, { onDelete: deleteEmployee });
 
   return row;
 }
@@ -419,6 +408,7 @@ function createRow(name, entry) {
 function deleteEmployee(name) {
   state.staff = state.staff.filter((employee) => employee !== name);
   delete state.roles[name];
+  delete state.employeeProfiles[name];
 
   for (const day of Object.values(state.days)) {
     delete day[name];

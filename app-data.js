@@ -77,4 +77,108 @@ window.MealTrackerData = {
   ],
   jobRoles: ["QA", "Dev", "Bookkeeper", "PM", "BPM", "CSR", "IT", "HR", "Intern", "Other"],
   workStatuses: ["Work from Office", "Work from Home", "Leave"],
+  normalizeState(nextState) {
+    const { employees } = window.MealTrackerData;
+    const defaultStaff = employees.map((employee) => employee.name);
+    const defaultRoles = Object.fromEntries(employees.map((employee) => [employee.name, employee.role]));
+    const defaultProfiles = Object.fromEntries(
+      employees.map((employee) => [
+        employee.name,
+        { id: employee.id?.trim() ?? "", contact: employee.contact?.trim() ?? "" },
+      ]),
+    );
+
+    nextState.staff ??= [...defaultStaff];
+    nextState.roles ??= {};
+    nextState.days ??= {};
+    nextState.closedDates ??= {};
+    nextState.employeeProfiles ??= {};
+
+    for (const name of nextState.staff) {
+      nextState.roles[name] ??= defaultRoles[name] ?? "Other";
+      nextState.employeeProfiles[name] ??= defaultProfiles[name] ?? { id: "", phone: "", email: "" };
+      nextState.employeeProfiles[name] = window.MealTrackerData.normalizeProfile(nextState.employeeProfiles[name]);
+    }
+
+    for (const name of Object.keys(nextState.employeeProfiles)) {
+      if (!nextState.staff.includes(name)) {
+        delete nextState.employeeProfiles[name];
+      }
+    }
+
+    return nextState;
+  },
+  employeeProfile(state, name) {
+    const profile = state.employeeProfiles?.[name] ?? { id: "", phone: "", email: "", idLocked: false };
+    return window.MealTrackerData.normalizeProfile(profile);
+  },
+  normalizeProfile(profile = {}) {
+    const next = {
+      id: profile.id?.trim() ?? "",
+      phone: profile.phone?.trim() ?? "",
+      email: profile.email?.trim() ?? "",
+      idLocked: Boolean(profile.idLocked),
+    };
+
+    if (!next.phone && !next.email && profile.contact?.trim()) {
+      const contact = profile.contact.trim();
+      if (contact.includes("@")) {
+        next.email = contact;
+      } else {
+        next.phone = contact.replace(/\D/g, "");
+      }
+    }
+
+    return next;
+  },
+  generateEmployeeId(state) {
+    let max = 200000;
+
+    for (const profile of Object.values(state.employeeProfiles ?? {})) {
+      const numericId = Number.parseInt((profile.id ?? "").trim(), 10);
+      if (!Number.isNaN(numericId) && numericId > max) {
+        max = numericId;
+      }
+    }
+
+    return String(max + 1);
+  },
+  isEmployeeIdTaken(state, id, exceptName = null) {
+    const normalized = id.trim();
+    if (!normalized) return false;
+
+    for (const [name, profile] of Object.entries(state.employeeProfiles ?? {})) {
+      if (name === exceptName) continue;
+      if ((profile.id ?? "").trim() === normalized) return true;
+    }
+
+    return false;
+  },
+  validateEmployeeFields({ id, name, phone, email, idEditable = true }) {
+    const checks = {
+      id: {
+        label: "Employee ID is numbers only (e.g. 200001)",
+        valid: !idEditable || /^\d{6,}$/.test(id.trim()),
+      },
+      name: {
+        label: "Name uses letters and spaces only",
+        valid: /^[A-Za-z\s]+$/.test(name.trim()) && name.trim().length > 0,
+      },
+      phone: {
+        label: "Phone number is exactly 11 digits",
+        valid: /^\d{11}$/.test(phone.trim()),
+      },
+      email: {
+        label: "Email address format is valid",
+        valid: email.trim() === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()),
+      },
+    };
+
+    const failures = Object.values(checks).filter((check) => !check.valid);
+    return {
+      valid: failures.length === 0,
+      checks,
+      message: failures.map((check) => check.label).join(". "),
+    };
+  },
 };

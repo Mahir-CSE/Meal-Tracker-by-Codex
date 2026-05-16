@@ -1,9 +1,10 @@
-const { storageKey: STORAGE_KEY, employees: defaultEmployees, workStatuses } = window.MealTrackerData;
+const { storageKey: STORAGE_KEY, employees: defaultEmployees, workStatuses, normalizeState } = window.MealTrackerData;
 const defaultStaff = defaultEmployees.map((employee) => employee.name);
 const defaultRoles = Object.fromEntries(defaultEmployees.map((employee) => [employee.name, employee.role]));
 
 const params = new URLSearchParams(window.location.search);
-const employeeName = params.get("employee") ?? defaultStaff[0];
+let employeeName = params.get("employee") ?? defaultStaff[0];
+const employeeUI = window.MealTrackerEmployeeUI;
 const employeeNameHeading = document.querySelector("#employeeName");
 const employeeRole = document.querySelector("#employeeRole");
 const monthContext = document.querySelector("#monthContext");
@@ -16,8 +17,27 @@ const prevPeriod = document.querySelector("#prevPeriod");
 const nextPeriod = document.querySelector("#nextPeriod");
 const homeButton = document.querySelector("#homeButton");
 const detailsExportOption = document.querySelector("#detailsExportOption");
+const viewEmployeeProfile = document.querySelector("#viewEmployeeProfile");
+const editEmployeeProfile = document.querySelector("#editEmployeeProfile");
 
 const state = loadState();
+
+employeeUI.init({
+  getState: () => state,
+  saveState,
+  onUpdated: render,
+  getActiveEmployeeName: () => employeeName,
+  onRenamed: (_oldName, newName) => {
+    employeeName = newName;
+    const url = new URL(window.location.href);
+    url.searchParams.set("employee", newName);
+    history.replaceState(null, "", url);
+  },
+  defaultRoles,
+  jobRoles: window.MealTrackerData.jobRoles,
+  viewButton: viewEmployeeProfile,
+  editButton: editEmployeeProfile,
+});
 let currentView = "week";
 let cursorDate = parseInitialDate();
 
@@ -69,16 +89,7 @@ function loadState() {
     days: {},
   };
 
-  nextState.staff ??= [...defaultStaff];
-  nextState.roles ??= {};
-  nextState.days ??= {};
-  nextState.closedDates ??= {};
-
-  for (const name of nextState.staff) {
-    nextState.roles[name] ??= defaultRoles[name] ?? "Other";
-  }
-
-  return nextState;
+  return normalizeState(nextState);
 }
 
 function saveState() {

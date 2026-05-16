@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Office Meal Tracker</title>
-    <link rel="stylesheet" href="./styles.css?v=4" />
+    <link rel="stylesheet" href="./styles.css?v=7" />
   </head>
   <body>
     <main class="app-shell">
@@ -24,8 +24,8 @@
             <span>Export</span>
             <select id="exportOption" aria-label="Export meal tracker">
               <option value="">Export as</option>
-              <option value="pdf">Export as PDF</option>
-              <option value="csv">Export as CSV</option>
+              <option value="pdf">PDF</option>
+              <option value="csv">CSV</option>
             </select>
           </label>
         </div>
@@ -64,10 +64,7 @@
           <span>Employee</span>
           <span id="staffTotal">0 people</span>
         </div>
-        <form class="add-staff" id="addStaffForm">
-          <input id="newStaffName" type="text" placeholder="Add new employee" autocomplete="off" />
-          <button type="submit">Add</button>
-        </form>
+        <button class="add-employee-btn" id="openAddEmployee" type="button">Add Employee</button>
         <label class="field">
           <span>Search</span>
           <input id="searchStaff" type="search" placeholder="Find employee" />
@@ -159,6 +156,7 @@
     </main>
 
     <script src="./app-data.js"></script>
-    <script src="./app.js?v=4"></script>
+    <script src="./employee-ui.js?v=2"></script>
+    <script src="./app.js?v=7"></script>
   </body>
 </html>
