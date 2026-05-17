@@ -262,7 +262,7 @@ textarea:focus {
 }
 
 .control-panel .panel-header {
-  align-self: center;
+  align-self:flex-start;
   margin-bottom: 0;
 }
 
@@ -283,7 +283,7 @@ textarea:focus {
 .status-filters button {
   border: 0;
   border-radius: 8px;
-  background: var(--ink);
+  background: #17803c;
   color: white;
   font-weight: 800;
   padding: 0 14px;
